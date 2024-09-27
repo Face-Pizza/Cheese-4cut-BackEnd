@@ -3,7 +3,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from PIL import Image
 
-QRCODE_SERVER_URL = 'https://cheese4cut-qrcode.vercel.app/'
+QRCODE_SERVER_URL = 'http://cheese4cut-qrcode.vercel.app/'
 
 # qrcode 생성
 def genQR(id: int) -> ContentFile:

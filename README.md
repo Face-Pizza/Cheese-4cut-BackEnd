@@ -6,7 +6,7 @@
 - Django (웹서버)
 - Pillow (이미지 처리)
 - qrcode (QR코드 생성)
-- pywin32 (프린터 제어)
+- pywin32 (프린터 제어) (단, window 환경에서만 실행됨)
 
 ## 코드 흐름
 ### 클라이언트
@@ -70,15 +70,22 @@ npm install styled-components
 python -m venv venv
 source venv/Scripts/activate
 ```
-2. 필요 모듈 설치
+2. 필요 모듈 설치<br/>
+2.1. 모듈 install
 ```commandline
 pip install django
 pip install djangorestframework
 pip install Pillow
 pip install qrcode
 pip install django-cors-headers
+pip install django-environ
 pip install pywin32
 ```
+2.2. 의존성 모듈 설치
+```commandline
+pip install -r requirements.txt
+```
+
 3. 실행
 ```commandline
 python manage.py makemigrations
