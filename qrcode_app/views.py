@@ -2,7 +2,8 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from .models import Photo
 from .serializers import PhotoSerializer
-from .utils import genQR
+from .utils import genQR, decrypt_id
+from django.http import HttpResponse, JsonResponse
 
 class PhotoViewSet(viewsets.ModelViewSet):
     queryset = Photo.objects.all()
@@ -21,15 +22,33 @@ class PhotoViewSet(viewsets.ModelViewSet):
             photo_instance.qr_code.save(f"qr_{photo_instance.id}.png", qr_code_image)
             photo_instance.save()  # 다시 저장하여 qr_code 갱신
 
-            return Response({"message": "Image and QR code generated successfully!"}, status=status.HTTP_201_CREATED)
+            qr_code_url = photo_instance.qr_code.url  # QR 코드 URL 반환
+
+            return Response({
+                    "message": "Image and QR code generated successfully!",
+                    "qr_code_url": qr_code_url
+                }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    """queryset = Photo.objects.all()
-    serializer_class = PhotoSerializer
+    # QR 코드 스캔 후 암호화된 ID를 복호화하여 처리하는 뷰
+def qr_code_view(request, encrypted_id):
+    try:
+        # 암호화된 ID 복호화
+        user_id = decrypt_id(encrypted_id)
+        
+        # 해당 ID의 사진 데이터를 처리 (예시로 해당 photo를 가져옴)
+        photo_instance = Photo.objects.get(id=user_id)
+        
+        # 예시로 Photo 객체의 정보 반환
+        return JsonResponse({
+            "photo_id": photo_instance.id,
+            "image_url": photo_instance.image.url,
+            "message": "QR code processed successfully."
+        })
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        photo = serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)"""
+    except Photo.DoesNotExist:
+        return HttpResponse("Photo not found.", status=404)
+
+    except Exception as e:
+        return HttpResponse("Invalid QR Code.", status=400)
