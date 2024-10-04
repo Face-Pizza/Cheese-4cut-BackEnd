@@ -35,12 +35,13 @@ class PhotoViewSet(viewsets.ModelViewSet):
 def qr_code_view(request, encrypted_id):
     try:
         # 암호화된 ID 복호화
+        print(f"Received encrypted ID: {encrypted_id}")
         user_id = decrypt_id(encrypted_id)
+        print(f"Decrypted ID: {user_id}")
         
-        # 해당 ID의 사진 데이터를 처리 (예시로 해당 photo를 가져옴)
+        # 해당 ID의 사진 데이터를 처리
         photo_instance = Photo.objects.get(id=user_id)
         
-        # 예시로 Photo 객체의 정보 반환
         return JsonResponse({
             "photo_id": photo_instance.id,
             "image_url": photo_instance.image.url,
@@ -48,7 +49,9 @@ def qr_code_view(request, encrypted_id):
         })
 
     except Photo.DoesNotExist:
+        print(f"Photo with ID {user_id} does not exist.")
         return HttpResponse("Photo not found.", status=404)
 
     except Exception as e:
+        print(f"Error processing QR code: {str(e)}")
         return HttpResponse("Invalid QR Code.", status=400)

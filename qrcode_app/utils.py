@@ -4,27 +4,35 @@ from django.core.files.base import ContentFile
 from PIL import Image
 from cryptography.fernet import Fernet
 import base64
+import os
 
-# 대칭 키 생성 (한 번 생성 후 보관)
-key = Fernet.generate_key()  # 이 키는 안전하게 보관해야 합니다
-cipher_suite = Fernet(key)
+# settings.py 또는 환경 변수에서 암호화 키를 가져옴
+# 서버 재시작 시마다 동일한 키를 사용하도록 보장
+SECRET_KEY = os.getenv('FERNET_SECRET_KEY', 'your-fixed-key')  # 환경 변수에서 가져오거나 고정된 값 사용
+cipher_suite = Fernet(SECRET_KEY.encode('utf-8'))
 
 # ID 암호화 함수
 def encrypt_id(user_id: int) -> str:
-    # ID를 바이트로 변환한 후 암호화
-    user_id_bytes = str(user_id).encode('utf-8')
-    encrypted_id = cipher_suite.encrypt(user_id_bytes)
-    
-    # URL-safe 문자열로 변환
-    return base64.urlsafe_b64encode(encrypted_id).decode('utf-8')
+    try:
+        # ID를 바이트로 변환한 후 암호화
+        user_id_bytes = str(user_id).encode('utf-8')
+        encrypted_id = cipher_suite.encrypt(user_id_bytes)
+        
+        # URL-safe 문자열로 변환하여 반환
+        return base64.urlsafe_b64encode(encrypted_id).decode('utf-8')
+    except Exception as e:
+        raise ValueError(f"Encryption failed: {e}")
 
 # ID 복호화 함수
 def decrypt_id(encrypted_id: str) -> int:
-    # URL-safe 문자열을 다시 바이트로 변환한 후 복호화
-    encrypted_id_bytes = base64.urlsafe_b64decode(encrypted_id)
-    decrypted_id = cipher_suite.decrypt(encrypted_id_bytes)
-    
-    return int(decrypted_id.decode('utf-8'))
+    try:
+        # URL-safe 문자열을 다시 바이트로 변환한 후 복호화
+        encrypted_id_bytes = base64.urlsafe_b64decode(encrypted_id)
+        decrypted_id = cipher_suite.decrypt(encrypted_id_bytes)
+        
+        return int(decrypted_id.decode('utf-8'))
+    except Exception as e:
+        raise ValueError(f"Decryption failed: {e}")
 
 QRCODE_SERVER_URL = 'http://facepizza-cheese.site'
 
