@@ -1,4 +1,4 @@
-import qrcode
+import qrcode, base64
 from io import BytesIO
 from django.core.files.base import ContentFile
 from PIL import Image
@@ -13,7 +13,8 @@ def genQR(id: int) -> ContentFile:
         box_size=3,     # qr 이미지 크기
         border=1        # 테두리 여백
     )
-    qr.add_data(QRCODE_SERVER_URL + '/' + str(id))
+    encoded_id = base64.urlsafe_b64encode(str(id).encode()).decode().rstrip("=")  # = 문자를 제거하여 더 짧은 URL
+    qr.add_data(f"{QRCODE_SERVER_URL}/{encoded_id}")
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
 
