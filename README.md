@@ -39,7 +39,11 @@
 2. QRcode 생성
 - db에 photo가 저장되면서 동시에 qrcode 생성 `views.py`
     - qrcode 생성 코드는 `utils.py`로 분리해서 관리함
-- 로컬 react에서 사진을 찍고, django 서버로 전송, django 서버는 네컷 사진을 다운받을 수 있는 배포된 react랑 다시 연결<br/>
+- 로컬 react에서 사진을 찍고, django 서버로 전송, django 서버는 네컷 사진을 다운받을 수 있는 배포된 react랑 다시 연결
+- url의 id 파라미터는 인코딩 한 값으로 저장
+    - 처음에는 `urllib.parse`의 `quote` 함수를 사용하려고 했으나, id가 숫자밖에 없어 다른 문자로 바뀌지 않음
+    - 그래서 base64 암호화 방식을 택함.
+    - base64 인코딩은 url에서 기존의 존재하는 특수기호도 포함돼서 인코딩 되므로 사전에 그런 문자를 제거해줘야 함. `urlsafe_b64encode` 사용<br/>
 
 3. 네컷 사진에 qrcode 출력
 - react에서 qr_code를 get 해서 불러옴
